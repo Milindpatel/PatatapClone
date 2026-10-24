@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Circles – a Patatap clone</title>
+  <link rel="stylesheet" href="circles.css">
+  <script src="js/howler.core.min.js"></script>
+  <script src="js/paper-full.min.js"></script>
+  <script type="text/paperscript" canvas="myCanvas">
+    // Each letter key plays a sound and drops a colored circle that shrinks and changes hue.
+    var keyData = {
+      q: { sound: 'bubbles', color: '#1abc9c' },
+      w: { sound: 'clay', color: '#2ecc71' },
+      e: { sound: 'confetti', color: '#3498db' },
+      r: { sound: 'corona', color: '#9b59b6' },
+      t: { sound: 'dotted-spiral', color: '#34495e' },
+      y: { sound: 'flash-1', color: '#16a085' },
+      u: { sound: 'flash-2', color: '#27ae60' },
+      i: { sound: 'flash-3', color: '#2980b9' },
+      o: { sound: 'glimmer', color: '#8e44ad' },
+      p: { sound: 'moon', color: '#2c3e50' },
+      a: { sound: 'pinwheel', color: '#f1c40f' },
+      s: { sound: 'piston-1', color: '#e67e22' },
+      d: { sound: 'piston-2', color: '#e74c3c' },
+      f: { sound: 'prism-1', color: '#95a5a6' },
+      g: { sound: 'prism-2', color: '#f39c12' },
+      h: { sound: 'prism-3', color: '#d35400' },
+      j: { sound: 'splits', color: '#1abc9c' },
+      k: { sound: 'squiggle', color: '#2ecc71' },
+      l: { sound: 'strike', color: '#3498db' },
+      z: { sound: 'suspension', color: '#9b59b6' },
+      x: { sound: 'timer', color: '#34495e' },
+      c: { sound: 'ufo', color: '#16a085' },
+      v: { sound: 'veil', color: '#27ae60' },
+      b: { sound: 'wipe', color: '#2980b9' },
+      n: { sound: 'zig-zag', color: '#8e44ad' },
+      m: { sound: 'moon', color: '#2c3e50' }
+    };
+    var letters = Object.keys(keyData);
+
+    // Create the Howl objects once, on first use.
+    var sounds = {};
+    function soundFor(key) {
+      if (!sounds[key]) sounds[key] = new Howl({ src: ['sounds/' + keyData[key].sound + '.mp3'] });
+      return sounds[key];
+    }
+
+    var circles = [];
+
+    function trigger(key) {
+      var data = keyData[key];
+      if (!data) return;
+      var point = new Point(view.size.width, view.size.height) * Point.random();
+      var circle = new Path.Circle(point, 500);
+      circle.fillColor = data.color;
+      circles.push(circle);
+      soundFor(key).play();
+      document.getElementById('hint').style.display = 'none';
+    }
+
+    function onKeyDown(event) {
+      trigger(event.key.toLowerCase());
+    }
+
+    // Touch screens and mice: a tap plays a random key.
+    function onMouseDown() {
+      trigger(letters[Math.floor(Math.random() * letters.length)]);
+    }
+
+    function onFrame() {
+      for (var i = circles.length - 1; i >= 0; i--) {
+        circles[i].fillColor.hue += 1;
+        circles[i].scale(0.9);
+        // Remove circles once they are too small to see, so they don't pile up.
+        if (circles[i].bounds.width < 1) {
+          circles[i].remove();
+          circles.splice(i, 1);
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <p id="hint">Press any letter key (or tap the screen) to play.</p>
+  <canvas id="myCanvas" resize></canvas>
+</body>
+</html>
